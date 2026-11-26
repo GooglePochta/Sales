@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Приложение со скидками, акциями и дисконтными картами">
+  <link rel="manifest" href="manifest.json">
+  <title>СкидкаМаркет | Акции и Карты</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      padding-bottom: 80px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.08);
+    }
+
+    /* Top Header */
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      padding: 18px 20px 22px;
+      border-radius: 0 0 24px 24px;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      background: rgba(255, 255, 255, 0.25);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-bonus {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Search Bar */
+    .search-box {
+      position: relative;
+      margin-top: 6px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      background: rgba(255, 255, 255, 0.95);
+      border: none;
+      border-radius: 14px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      opacity: 0.5;
+    }
+
+    /* Content Area */
+    .content-tab {
+      display: none;
+      padding: 16px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .content-tab.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Categories Horizontal Scroll */
+    .categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-btn {
+      padding: 8px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .cat-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    /* Section Header */
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 12px 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title span.count {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    /* Product Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s;
+    }
+
+    .product-card:active {
+      transform: scale(0.98);
+    }
+
+    .product-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+      z-index: 2;
+    }
+
+    .product-img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .product-store {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .product-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      height: 34px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .product-prices {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: auto;
+      margin-bottom: 10px;
+    }
+
+    .price-current {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .price-old {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .add-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Cards Tab (Loyalty Cards) */
+    .loyalty-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .loyalty-card {
+      border-radius: 18px;
+      padding: 18px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .loyalty-card:active {
+      transform: scale(0.98);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .card-shop {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .card-discount-val {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .card-number {
+      font-family: monospace;
+      font-size: 16px;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .card-action-hint {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+    }
+
+    .add-card-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--card-bg);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      transition: all 0.2s;
+    }
+
+    .add-card-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    /* Cart & Promo Tab */
+    .cart-summary-box {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .promo-input-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .promo-input {
+      flex: 1;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .promo-apply-btn {
+      padding: 11px 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .summary-row.savings {
+      color: var(--secondary);
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .summary-row.total {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+
+    .cart-item-emoji {
+      font-size: 28px;
+      width: 48px;
+      height: 48px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .cart-item-prices {
+      display: flex;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+
+    .qty-btn {
+      background: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Modal (Barcode for Cashier) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: white;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 24px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .barcode-wrapper {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px dashed #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    #barcodeCanvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .barcode-digits {
+      font-family: monospace;
+      font-size: 18px;
+      letter-spacing: 3px;
+      margin-top: 10px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .close-modal-btn {
+      width: 100%;
+      padding: 12px;
+      background: #f1f5f9;
+      color: var(--text);
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 10px 14px;
+      z-index: 50;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      position: relative;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-item .nav-icon {
+      font-size: 20px;
+    }
+
+    .nav-badge {
+      position: absolute;
+      top: -2px;
+      right: 22px;
+      background: var(--danger);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1e293b;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      z-index: 200;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="header">
+      <div class="header-top">
+        <div class="brand-title">
+          🏷️ СкидкаМаркет
+          <span class="brand-badge">APK</span>
+        </div>
+        <div class="header-bonus" title="Ваши бонусы">
+          ⭐ <span id="userBonusCount">450</span> Б
+        </div>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Поиск скидок и товаров...">
+      </div>
+    </header>
+
+    <!-- TAB 1: Каталог Скидок и Акций -->
+    <div id="tab-discounts" class="content-tab active">
+      <!-- Categories -->
+      <div class="categories" id="categoryList">
+        <button class="cat-btn active" data-cat="all">🔥 Все акции</button>
+        <button class="cat-btn" data-cat="groceries">🍏 Продукты</button>
+        <button class="cat-btn" data-cat="clothes">👕 Одежда</button>
+        <button class="cat-btn" data-cat="electronics">📱 Техника</button>
+        <button class="cat-btn" data-cat="beauty">✨ Красота</button>
+      </div>
+
+      <div class="section-title">
+        <span>Горящие скидки сегодня</span>
+        <span class="count" id="productCount">8 товаров</span>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="productsContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- TAB 2: Мои карты скидок (Предъявить на кассе) -->
+    <div id="tab-cards" class="content-tab">
+      <div class="section-title">
+        <span>Карты для касс магазинов</span>
+        <span class="count">Нажмите для штрихкода</span>
+      </div>
+
+      <div class="loyalty-cards-list" id="loyaltyCardsContainer">
+        <!-- Rendered by JS -->
+      </div>
+
+      <button class="add-card-btn" id="btnOpenAddCardModal">
+        ➕ Добавить новую карту магазина
+      </button>
+    </div>
+
+    <!-- TAB 3: Корзина и расчет скидки -->
+    <div id="tab-cart" class="content-tab">
+      <div class="section-title">
+        <span>Моя корзина выгоды</span>
+      </div>
+
+      <div id="cartItemsList">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="cart-summary-box">
+        <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;">Промокод на скидку:</div>
+        <div class="promo-input-group">
+          <input type="text" id="promoCodeInput" class="promo-input" placeholder="Введите код (например, SUPER20)">
+          <button class="promo-apply-btn" id="applyPromoBtn">Применить</button>
+        </div>
+        <div id="promoNotice" style="font-size: 12px; margin-bottom: 10px; display: none;"></div>
+
+        <div class="summary-row">
+          <span>Сумма без скидки:</span>
+          <span id="sumOriginal">0 ₽</span>
+        </div>
+        <div class="summary-row savings">
+          <span>Ваша скидка (экономия):</span>
+          <span id="sumDiscount">-0 ₽</span>
+        </div>
+        <div class="summary-row" id="promoRow" style="display: none; color: #7c3aed; font-weight: 700;">
+          <span>Скидка по промокоду:</span>
+          <span id="sumPromo">-0 ₽</span>
+        </div>
+        <div class="summary-row total">
+          <span>Итого к оплате:</span>
+          <span id="sumTotal" style="color: var(--primary);">0 ₽</span>
+        </div>
+
+        <button class="add-btn" style="background: var(--primary); color: white; padding: 14px; font-size: 14px; margin-top: 14px;" onclick="checkoutOrder()">
+          Оформить покупку со скидкой
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="tab-discounts">
+        <span class="nav-icon">🏷️</span>
+        <span>Скидки</span>
+      </button>
+      <button class="nav-item" data-target="tab-cards">
+        <span class="nav-icon">💳</span>
+        <span>Мои карты</span>
+      </button>
+      <button class="nav-item" data-target="tab-cart">
+        <span class="nav-icon">🛒</span>
+        <span>Корзина</span>
+        <span class="nav-badge" id="cartBadge" style="display: none;">0</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Barcode Modal (Cashier Scanner) -->
+  <div class="modal-overlay" id="barcodeModal">
+    <div class="modal-card">
+      <div class="modal-title" id="modalShopName">Пятёрочка</div>
+      <div class="modal-subtitle">Покажите этот штрихкод кассиру для получения скидки</div>
+      
+      <div class="barcode-wrapper">
+        <canvas id="barcodeCanvas"></canvas>
+        <div class="barcode-digits" id="modalCardNumber">2800 1928 4712</div>
+      </div>
+
+      <div style="font-size: 13px; color: var(--secondary); font-weight: 700; margin-bottom: 12px;" id="modalDiscountRate">
+        Ваша скидка: 10%
+      </div>
+
+      <button class="close-modal-btn" id="closeBarcodeModalBtn">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Add Card Modal -->
+  <div class="modal-overlay" id="addCardModal">
+    <div class="modal-card">
+      <div class="modal-title">Добавить карту</div>
+      <div class="modal-subtitle">Введите данные дисконтной карты любого магазина</div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; text-align: left; margin-bottom: 16px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Название магазина</label>
+          <input type="text" id="newCardShop" placeholder="Например: Магнит, Лента, Спортмастер" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; font-size: 14px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Номер карты / штрихкода</label>
+          <input type="text" id="newCardNum" placeholder="Например: 778945612301" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; font-size: 14px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Размер скидки или бонусов</label>
+          <input type="text" id="newCardDiscount" placeholder="Например: Скидка 15% или Кэшбэк 5%" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; font-size: 14px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Цвет карты</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;" id="cardColorPicker">
+            <div class="color-dot selected" data-color="linear-gradient(135deg, #10b981, #059669)" style="width: 30px; height: 30px; border-radius: 50%; background: #10b981; cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 2px #10b981;"></div>
+            <div class="color-dot" data-color="linear-gradient(135deg, #ef4444, #dc2626)" style="width: 30px; height: 30px; border-radius: 50%; background: #ef4444; cursor: pointer;"></div>
+            <div class="color-dot" data-color="linear-gradient(135deg, #3b82f6, #1d4ed8)" style="width: 30px; height: 30px; border-radius: 50%; background: #3b82f6; cursor: pointer;"></div>
+            <div class="color-dot" data-color="linear-gradient(135deg, #8b5cf6, #6d28d9)" style="width: 30px; height: 30px; border-radius: 50%; background: #8b5cf6; cursor: pointer;"></div>
+            <div class="color-dot" data-color="linear-gradient(135deg, #1f2937, #111827)" style="width: 30px; height: 30px; border-radius: 50%; background: #1f2937; cursor: pointer;"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="add-btn" style="background: var(--primary); color: white; padding: 12px;" id="saveNewCardBtn">Сохранить карту</button>
+      <button class="close-modal-btn" id="closeAddCardModalBtn">Отмена</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toastMsg">Товар добавлен со скидкой!</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "discount-store-app",
+  "version": "1.0.0",
+  "description": "Мобильное приложение скидок и карт магазинов для Android APK",
+  "scripts": {
+    "start": "npx serve .",
+    "build:apk": "npx cap sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0"
+  }
+}
