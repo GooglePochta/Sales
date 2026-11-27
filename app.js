@@ -20,12 +20,31 @@ const defaultCards = [
   { id: 'c4', shop: 'Спортмастер', num: '992015678432', discount: 'Бонусы до 30% покупки', bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', level: 'Серебряный' }
 ];
 
+// Safe LocalStorage helper
+function getStoredCards() {
+  try {
+    const raw = localStorage.getItem('user_discount_cards');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn('LocalStorage error:', e);
+  }
+  return defaultCards;
+}
+
+function saveStoredCards(cards) {
+  try {
+    localStorage.setItem('user_discount_cards', JSON.stringify(cards));
+  } catch (e) {
+    console.warn('LocalStorage save error:', e);
+  }
+}
+
 // App State
 let state = {
   currentCategory: 'all',
   searchQuery: '',
   cart: {}, // productId: quantity
-  cards: JSON.parse(localStorage.getItem('user_discount_cards')) || defaultCards,
+  cards: getStoredCards(),
   activePromo: null,
   bonuses: 450
 };
@@ -64,16 +83,26 @@ const barcodeCanvas = document.getElementById('barcodeCanvas');
 const addCardModal = document.getElementById('addCardModal');
 let selectedColorBg = 'linear-gradient(135deg, #10b981, #059669)';
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  renderProducts();
-  renderCards();
-  setupNavigation();
-  setupSearch();
-  setupCategoryFilter();
-  setupCartEvents();
-  setupCardModals();
-});
+// Initialize safely
+function initApp() {
+  try {
+    renderProducts();
+    renderCards();
+    setupNavigation();
+    setupSearch();
+    setupCategoryFilter();
+    setupCartEvents();
+    setupCardModals();
+  } catch (err) {
+    console.error('Initialization error:', err);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // Toast notification
 function showToast(text) {
@@ -268,7 +297,8 @@ function renderCart() {
   const finalTotal = Math.max(0, discountedTotal - promoDiscount);
 
   sumOriginalEl.textContent = `${originalTotal} ₽`;
-  sumDiscountEl.textContent = `-${storeSavings} ₽ (${Math.round((storeSavings / originalTotal) * 100)}%)`;
+  const savingsPct = originalTotal > 0 ? Math.round((storeSavings / originalTotal) * 100) : 0;
+  sumDiscountEl.textContent = `-${storeSavings} ₽ (${savingsPct}%)`;
 
   if (promoDiscount > 0) {
     promoRow.style.display = 'flex';
@@ -300,6 +330,8 @@ window.checkoutOrder = function() {
   document.getElementById('userBonusCount').textContent = state.bonuses;
   state.cart = {};
   state.activePromo = null;
+  promoCodeInput.value = '';
+  promoNotice.style.display = 'none';
   updateCartBadge();
   renderCart();
   showToast("Заказ оформлен! Начислены бонусы ⭐");
@@ -346,7 +378,8 @@ function drawBarcode(canvas, code) {
   ctx.fillRect(x, 5, 2, barHeight); x += 5;
 
   for (let i = 0; i < code.length; i++) {
-    const digit = parseInt(code[i], 10) || (code.charCodeAt(i) % 10);
+    const parsed = parseInt(code[i], 10);
+    const digit = Number.isNaN(parsed) ? (code.charCodeAt(i) % 10) : parsed;
     const pattern = getBarPattern(digit);
     
     for (let p = 0; p < pattern.length; p++) {
@@ -415,6 +448,12 @@ function setupCardModals() {
     addCardModal.classList.remove('active');
   });
 
+  addCardModal.addEventListener('click', (e) => {
+    if (e.target === addCardModal) {
+      addCardModal.classList.remove('active');
+    }
+  });
+
   // Color picker for new card
   const colorDots = document.querySelectorAll('.color-dot');
   colorDots.forEach(dot => {
@@ -450,7 +489,7 @@ function setupCardModals() {
     };
 
     state.cards.push(newCard);
-    localStorage.setItem('user_discount_cards', JSON.stringify(state.cards));
+    saveStoredCards(state.cards);
     renderCards();
 
     // Reset inputs
@@ -462,11 +501,16 @@ function setupCardModals() {
   });
 }
 
-// Service Worker Registration for PWA / Offline / Mobile App
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+// Service Worker Registration for PWA / Offline / Mobile App (skip inside Capacitor native wrapper)
+if ('serviceWorker' in navigator && !window.Capacitor) {
+  const registerSW = () => {
     navigator.serviceWorker.register('sw.js').catch(err => {
       console.log('SW registration note:', err);
     });
-  });
+  };
+  if (document.readyState === 'complete') {
+    registerSW();
+  } else {
+    window.addEventListener('load', registerSW);
+  }
 }

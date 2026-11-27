@@ -1,7 +1,7 @@
 {
   "appId": "com.skidkamarket.app",
   "appName": "СкидкаМаркет",
-  "webDir": ".",
+  "webDir": "www",
   "bundledWebRuntime": false,
   "android": {
     "allowMixedContent": true

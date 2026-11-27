@@ -1,17 +1,6 @@
-const CACHE_NAME = 'discount-app-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './app.js',
-  './manifest.json'
-];
+const CACHE_NAME = 'discount-app-v3';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -28,8 +17,18 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const resClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cached) => {
+          return cached || caches.match('./index.html');
+        });
+      })
   );
 });
